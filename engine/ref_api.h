@@ -32,6 +32,7 @@ GNU General Public License for more details.
 
 
 #define TF_SKY		(TF_SKYSIDE|TF_NOMIPMAP)
+#define TF_SKY_NEAREST		(TF_NEAREST) //magic nipples - nearest skybox
 #define TF_FONT		(TF_NOMIPMAP|TF_CLAMP)
 #define TF_IMAGE		(TF_NOMIPMAP|TF_CLAMP)
 #define TF_DECAL		(TF_CLAMP)
