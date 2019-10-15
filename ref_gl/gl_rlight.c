@@ -42,7 +42,11 @@ void CL_RunLightStyles( void )
 
 	if( !WORLDMODEL ) return;
 
-	scale = r_lighting_modulate->value;
+	//magic nipples - overbright
+	if ( r_overbright->value )
+		scale = r_lighting_modulate->value / 1.7f;
+	else
+		scale = r_lighting_modulate->value;
 
 	// light animations
 	// 'm' is normal light, 'a' is no light, 'z' is double bright

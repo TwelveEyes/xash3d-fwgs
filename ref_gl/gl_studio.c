@@ -1659,7 +1659,11 @@ void R_StudioLighting( float *lv, int bone, int flags, vec3_t normal )
 
 	if( FBitSet( flags, STUDIO_NF_FULLBRIGHT ))
 	{
-		*lv = 1.0f;
+		//magic nipples - overbright
+		if ( r_overbright->value )
+			*lv = 0.6f;
+		else
+			*lv = 1.0f;
 		return;
 	}
 
@@ -2900,7 +2904,21 @@ static void R_StudioSetupRenderer( int rendermode )
 	if( rendermode > kRenderTransAdd ) rendermode = 0;
 	g_studio.rendermode = bound( 0, rendermode, kRenderTransAdd );
 
-	pglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+	//pglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE ); // twelveeyes: make way for overbright
+	//magic nipples - overbright
+	if ( r_overbright->value )
+	{
+		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB );
+		pglTexEnvi( GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, GL_MODULATE );
+		pglTexEnvi( GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB, GL_PREVIOUS_ARB );
+		pglTexEnvi( GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB, GL_TEXTURE );
+		pglTexEnvi( GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 2 );
+	}
+	else
+	{
+		pglTexEnvi( GL_TEXTURE_ENV, GL_RGB_SCALE_ARB, 1 );
+		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+	}	
 	pglDisable( GL_ALPHA_TEST );
 	pglShadeModel( GL_SMOOTH );
 

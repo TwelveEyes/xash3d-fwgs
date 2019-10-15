@@ -50,6 +50,8 @@ cvar_t	*tracergreen;
 cvar_t	*tracerblue;
 cvar_t	*traceralpha;
 
+cvar_t	*r_overbright; // twelveeyes: overbright
+
 byte		*r_temppool;
 
 gl_globals_t	tr;
@@ -791,6 +793,7 @@ void GL_InitCommands( void )
 	r_drawentities = gEngfuncs.Cvar_Get( "r_drawentities", "1", FCVAR_CHEAT, "render entities" );
 	r_decals = gEngfuncs.pfnGetCvarPointer( "r_decals", 0 );
 	r_showhull = gEngfuncs.pfnGetCvarPointer( "r_showhull", 0 );
+	r_overbright = gEngfuncs.Cvar_Get( "r_overbright", "1", FCVAR_ARCHIVE, "world overbrights" ); //magic nipples - overbright
 
 	gl_extensions = gEngfuncs.Cvar_Get( "gl_allow_extensions", "1", FCVAR_GLCONFIG, "allow gl_extensions" );
 	gl_texture_nearest = gEngfuncs.Cvar_Get( "gl_texture_nearest", "0", FCVAR_ARCHIVE, "disable texture filter" );
@@ -810,7 +813,7 @@ void GL_InitCommands( void )
 	gl_wireframe = gEngfuncs.Cvar_Get( "gl_wireframe", "0", FCVAR_ARCHIVE|FCVAR_SPONLY, "show wireframe overlay" );
 	gl_msaa = gEngfuncs.Cvar_Get( "gl_msaa", "1", FCVAR_ARCHIVE, "enable or disable multisample anti-aliasing" );
 	gl_stencilbits = gEngfuncs.Cvar_Get( "gl_stencilbits", "8", FCVAR_GLCONFIG, "pixelformat stencil bits (0 - auto)" );
-	gl_round_down = gEngfuncs.Cvar_Get( "gl_round_down", "2", FCVAR_GLCONFIG, "round texture sizes to nearest POT value" );
+	gl_round_down = gEngfuncs.Cvar_Get( "gl_round_down", "0", FCVAR_GLCONFIG, "round texture sizes to nearest POT value" ); // twelveeyes: round down default to 0
 	// these cvar not used by engine but some mods requires this
 	gl_polyoffset = gEngfuncs.Cvar_Get( "gl_polyoffset", "2.0", FCVAR_ARCHIVE, "polygon offset for decals" );
 

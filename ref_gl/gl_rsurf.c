@@ -214,7 +214,8 @@ void GL_SetupFogColorForSurfaces( void )
 		return;
 	}
 
-	div = (r_detailtextures->value) ? 2.0f : 1.0f;
+	div = (r_overbright->value) ? 2.0f : 1.0f; // twelveeyes: make way for overbright
+	//div = (r_detailtextures->value) ? 2.0f : 1.0f;
 	factor = (r_detailtextures->value) ? 3.0f : 2.0f;
 	fogColor[0] = pow( RI.fogColor[0] / div, ( 1.0f / factor ));
 	fogColor[1] = pow( RI.fogColor[1] / div, ( 1.0f / factor ));
@@ -925,8 +926,13 @@ void R_BlendLightmaps( void )
 	pglDepthFunc( GL_EQUAL );
 
 	pglDisable( GL_ALPHA_TEST );
-	pglBlendFunc( GL_ZERO, GL_SRC_COLOR );
-	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+	//pglBlendFunc( GL_ZERO, GL_SRC_COLOR ); // twelveeyes: make way for overbright
+	//magic nipples - overbright
+	if ( !r_overbright->value )
+		pglBlendFunc( GL_ZERO, GL_SRC_COLOR );
+	else
+		pglBlendFunc( GL_DST_COLOR, GL_SRC_COLOR );
+	//pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE ); // twelveeyes: make way for overbright
 
 	// render static lightmaps first
 	for( i = 0; i < MAX_LIGHTMAPS; i++ )

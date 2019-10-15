@@ -757,6 +757,8 @@ extern cvar_t *r_vbo_dlightmode;
 extern cvar_t	*vid_brightness;
 extern cvar_t	*vid_gamma;
 
+extern cvar_t	*r_overbright; //magic nipples - overbright
+
 //
 // engine shared convars
 //
