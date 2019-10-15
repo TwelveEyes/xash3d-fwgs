@@ -796,7 +796,7 @@ void GL_InitCommands( void )
 	r_overbright = gEngfuncs.Cvar_Get( "r_overbright", "1", FCVAR_ARCHIVE, "world overbrights" ); //magic nipples - overbright
 
 	gl_extensions = gEngfuncs.Cvar_Get( "gl_allow_extensions", "1", FCVAR_GLCONFIG, "allow gl_extensions" );
-	gl_texture_nearest = gEngfuncs.Cvar_Get( "gl_texture_nearest", "0", FCVAR_ARCHIVE, "disable texture filter" );
+	gl_texture_nearest = gEngfuncs.Cvar_Get( "gl_texture_nearest", "1", FCVAR_ARCHIVE, "disable texture filter" ); // twelveeyes: texture filter off by default
 	gl_lightmap_nearest = gEngfuncs.Cvar_Get( "gl_lightmap_nearest", "0", FCVAR_ARCHIVE, "disable lightmap filter" );
 	gl_check_errors = gEngfuncs.Cvar_Get( "gl_check_errors", "1", FCVAR_ARCHIVE, "ignore video engine errors" );
 	gl_vsync = gEngfuncs.pfnGetCvarPointer( "gl_vsync", 0 );

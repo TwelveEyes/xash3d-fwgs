@@ -162,7 +162,8 @@ void GL_ApplyTextureParams( gl_texture_t *tex )
 	{
 		if( FBitSet( tex->flags, TF_NEAREST ) || gl_texture_nearest->value )
 		{
-			pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST );
+			pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); // twelveeyes: no mipmapping
+			//pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST );
 			pglTexParameteri( tex->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		}
 		else
@@ -280,7 +281,8 @@ static void GL_UpdateTextureParams( int iTexture )
 
 	if( FBitSet( tex->flags, TF_NEAREST ) || gl_texture_nearest->value )
 	{
-		pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST );
+		pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST ); // twelveeyes: no mipmapping
+		//pglTexParameteri( tex->target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST );
 		pglTexParameteri( tex->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	}
 	else
