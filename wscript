@@ -114,15 +114,12 @@ def configure(conf):
 	# We restrict 64-bit builds ONLY for Win/Linux/OSX running on Intel architecture
 	# Because compatibility with original GoldSrc
 	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU in ['x86_64']:
-		conf.env.BIT32_ALLOW64 = conf.options.ALLOW64
-		if not conf.env.BIT32_ALLOW64:
+		conf.env.BIT32_MANDATORY = not conf.options.ALLOW64
+		if not conf.env.BIT32_MANDATORY:
 			Logs.info('WARNING: will build engine for 32-bit target')
 	else:
-		conf.env.BIT32_ALLOW64 = True
-	conf.env.BIT32_MANDATORY = not conf.env.BIT32_ALLOW64
+		conf.env.BIT32_MANDATORY = False
 	conf.load('force_32bit')
-	if conf.env.DEST_OS != 'android' and not conf.options.DEDICATED:
-		conf.load('sdl2')
 
 	linker_flags = {
 		'common': {
@@ -171,8 +168,6 @@ def configure(conf):
 
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
-		'-Werror=implicit-function-declaration',
-		'-Werror=int-conversion',
 		'-Werror=return-type',
 		'-Werror=parentheses',
 		'-Werror=vla',
@@ -181,10 +176,13 @@ def configure(conf):
 		'-Werror=duplicated-branches', # BEWARE: buggy
 		'-Werror=bool-compare',
 		'-Werror=bool-operation',
+		'-Wdouble-promotion',
 		'-Wstrict-aliasing',
 	]
 
 	c_compiler_optional_flags = [
+		'-Werror=implicit-function-declaration',
+		'-Werror=int-conversion',
 		'-Werror=implicit-int',
 		'-Werror=strict-prototypes',
 		'-Werror=old-style-declaration',
@@ -226,12 +224,21 @@ def configure(conf):
 		conf.check_cc(cflags=cflags, msg= 'Checking for required C flags')
 		conf.check_cxx(cxxflags=cflags, msg= 'Checking for required C++ flags')
 
-		cflags += conf.filter_cflags(compiler_optional_flags + c_compiler_optional_flags, cflags)
 		cxxflags += conf.filter_cxxflags(compiler_optional_flags, cflags)
+		cflags += conf.filter_cflags(compiler_optional_flags + c_compiler_optional_flags, cflags)
 
 	conf.env.append_unique('CFLAGS', cflags)
 	conf.env.append_unique('CXXFLAGS', cxxflags)
 	conf.env.append_unique('LINKFLAGS', linkflags)
+
+	# check if we can use C99 tgmath
+	if conf.check_cc(header_name='tgmath.h', mandatory=False):
+		tgmath_usable = conf.check_cc(fragment='''#include<tgmath.h>
+			int main(void){ return (int)sin(2.0f); }''',
+			msg='Checking if tgmath.h is usable', mandatory=False)
+		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
+	else:
+		conf.undefine('HAVE_TGMATH_H')
 
 	conf.env.DEDICATED     = conf.options.DEDICATED
 	# we don't need game launcher on dedicated
@@ -250,13 +257,26 @@ def configure(conf):
 		# Don't check them more than once, to save time
 		# Usually, they are always available
 		# but we need them in uselib
-		conf.check_cc( lib='user32' )
-		conf.check_cc( lib='shell32' )
-		conf.check_cc( lib='gdi32' )
-		conf.check_cc( lib='advapi32' )
-		conf.check_cc( lib='dbghelp' )
-		conf.check_cc( lib='psapi' )
-		conf.check_cc( lib='ws2_32' )
+		a = map(lambda x: {
+			# 'features': 'c',
+			# 'message': '...' + x,
+			'lib': x,
+			# 'uselib_store': x.upper(),
+			# 'global_define': False,
+		}, [
+			'user32',
+			'shell32',
+			'gdi32',
+			'advapi32',
+			'dbghelp',
+			'psapi',
+			'ws2_32'
+		])
+
+		for i in a:
+			conf.check_cc(**i)
+
+		# conf.multicheck(*a, run_all_tests = True, mandatory = True)
 
 	# indicate if we are packaging for Linux/BSD
 	if(not conf.options.WIN_INSTALL and
