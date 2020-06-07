@@ -89,15 +89,13 @@ typedef struct ref_globals_s
 	// viewport width and height
 	int      width;
 	int      height;
+
 	qboolean fullScreen;
 	qboolean wideScreen;
 
 	vec3_t vieworg;
 	vec3_t viewangles;
 	vec3_t vforward, vright, vup;
-
-	cl_entity_t	*currententity;
-	model_t		*currentmodel;
 
 	// todo: fill this without engine help
 	// move to local
@@ -106,6 +104,8 @@ typedef struct ref_globals_s
 	sortedface_t	*draw_surfaces;	// used for sorting translucent surfaces
 	int		max_surfaces;	// max surfaces per submodel (for all models)
 	size_t		visbytes;		// cluster size
+
+	int desktopBitsPixel;
 } ref_globals_t;
 
 enum
@@ -211,6 +211,14 @@ enum
 	REF_GL_CONTEXT_ROBUST_ACCESS_FLAG      = 0x0004,
 	REF_GL_CONTEXT_RESET_ISOLATION_FLAG    = 0x0008
 };
+
+typedef enum ref_screen_rotation_e
+{
+	REF_ROTATE_NONE = 0,
+	REF_ROTATE_CW = 1,
+	REF_ROTATE_UD = 2,
+	REF_ROTATE_CCW = 3,
+} ref_screen_rotation_t;
 
 typedef struct remap_info_s
 {
@@ -322,9 +330,9 @@ typedef struct ref_api_s
 
 	// remap
 	struct remap_info_s *(*CL_GetRemapInfoForEntity)( cl_entity_t *e );
-	void (*CL_AllocRemapInfo)( int topcolor, int bottomcolor );
+	void (*CL_AllocRemapInfo)( cl_entity_t *ent, int topcolor, int bottomcolor );
 	void (*CL_FreeRemapInfo)( struct remap_info_s *info );
-	void (*CL_UpdateRemapInfo)( int topcolor, int bottomcolor );
+	void (*CL_UpdateRemapInfo)( cl_entity_t *ent, int topcolor, int bottomcolor );
 
 	// utils
 	void  (*CL_ExtraUpdate)( void );
@@ -436,6 +444,7 @@ typedef struct ref_interface_s
 	// const char *(*R_GetInitError)( void );
 	void (*R_Shutdown)( void );
 	const char *(*R_GetConfigName)( void ); // returns config name without extension
+	qboolean (*R_SetDisplayTransform)( ref_screen_rotation_t rotate, int x, int y, float scale_x, float scale_y );
 
 	// only called for GL contexts
 	void (*GL_SetupAttributes)( int safegl );
@@ -575,6 +584,8 @@ typedef struct ref_interface_s
 	void		(*R_NewMap)( void );
 	// clear the render entities before each frame
 	void		(*R_ClearScene)( void );
+	// GL_GetProcAddress for client renderer
+	void*		(*R_GetProcAddress)( const char *name );
 
 	// TriAPI Interface
 	// NOTE: implementation isn't required to be compatible

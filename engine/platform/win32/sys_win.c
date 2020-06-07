@@ -53,9 +53,22 @@ void Platform_ShellExecute( const char *path, const char *parms )
 	ShellExecute( NULL, "open", path, parms, NULL, SW_SHOW );
 }
 
-#ifdef XASH_DEDICATED
+#if XASH_MESSAGEBOX == MSGBOX_WIN32
 void Platform_MessageBox( const char *title, const char *message, qboolean parentMainWindow )
 {
 	MessageBox( parentMainWindow ? host.hWnd : NULL, message, title, MB_OK|MB_SETFOREGROUND|MB_ICONSTOP );
+}
+#endif // XASH_MESSAGEBOX == MSGBOX_WIN32
+
+#ifndef XASH_SDL
+
+void Platform_Init( void )
+{
+	Wcon_CreateConsole(); // system console used by dedicated server or show fatal errors
+
+}
+void Platform_Shutdown( void )
+{
+	Wcon_DestroyConsole();
 }
 #endif

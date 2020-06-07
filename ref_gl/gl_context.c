@@ -13,6 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+// GL API function pointers, if any, reside in this translation unit
+#define APIENTRY_LINKAGE
 #include "gl_local.h"
 #include "gl_export.h"
 
@@ -308,6 +310,40 @@ void R_ProcessEntData( qboolean allocate )
 		gEngfuncs.drawFuncs->R_ProcessEntData( allocate );
 }
 
+qboolean R_SetDisplayTransform( ref_screen_rotation_t rotate, int offset_x, int offset_y, float scale_x, float scale_y )
+{
+	qboolean ret = true;
+	if( rotate > 0 )
+	{
+		gEngfuncs.Con_Printf("rotation transform not supported\n");
+		ret = false;
+	}
+
+	if( offset_x || offset_y )
+	{
+		gEngfuncs.Con_Printf("offset transform not supported\n");
+		ret = false;
+	}
+
+	if( scale_x != 1.0f || scale_y != 1.0f )
+	{
+		gEngfuncs.Con_Printf("scale transform not supported\n");
+		ret = false;
+	}
+
+	return ret;
+}
+
+static void* GAME_EXPORT R_GetProcAddress( const char *name )
+{
+#ifdef XASH_GL4ES
+	extern void *gl4es_GetProcAddress( const char *name );
+	return gl4es_GetProcAddress( name );
+#else // TODO: other wrappers
+	return gEngfuncs.GL_GetProcAddress( name );
+#endif
+}
+
 static const char *R_GetConfigName( void )
 {
 	return "opengl";
@@ -318,6 +354,7 @@ ref_interface_t gReffuncs =
 	R_Init,
 	R_Shutdown,
 	R_GetConfigName,
+	R_SetDisplayTransform,
 
 	GL_SetupAttributes,
 	GL_InitExtensions,
@@ -428,6 +465,7 @@ ref_interface_t gReffuncs =
 	Mod_GetCurrentVis,
 	R_NewMap,
 	R_ClearScene,
+	R_GetProcAddress,
 
 	TriRenderMode,
 	TriBegin,
@@ -478,6 +516,8 @@ void EXPORT GetRefHumanReadableName( char *out, size_t size )
 	Q_strncpy( out, "GLES1(NanoGL)", size );
 #elif defined XASH_WES
 	Q_strncpy( out, "GLES2(gl-wes-v2)", size );
+#elif defined XASH_GL4ES
+	Q_strncpy( out, "GLES2(gl4es)", size );
 #else
 	Q_strncpy( out, "OpenGL", size );
 #endif

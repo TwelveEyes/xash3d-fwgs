@@ -42,7 +42,7 @@ GNU General Public License for more details.
 #define NET_MAX_PAYLOAD		MAX_INIT_MSG
 
 // Theoretically maximum size of UDP-packet without header and hardware-specific data
-#define NET_MAX_FRAGMENT		65536
+#define NET_MAX_FRAGMENT		65535
 
 // because encoded as highpart of uint32
 #define NET_MAX_BUFFER_ID		32767
@@ -78,23 +78,44 @@ GNU General Public License for more details.
 #define PORT_SERVER			27015
 
 #define MULTIPLAYER_BACKUP		64	// how many data slots to use when in multiplayer (must be power of 2)
-#define SINGLEPLAYER_BACKUP		16	// same for single player  
+#define SINGLEPLAYER_BACKUP		16	// same for single player
 #define CMD_BACKUP			64	// allow a lot of command backups for very fast systems
 #define CMD_MASK			(CMD_BACKUP - 1)
 #define NUM_PACKET_ENTITIES		256	// 170 Mb for multiplayer with 32 players
 #define MAX_CUSTOM_BASELINES		64
-
 #define NET_LEGACY_EXT_SPLIT		(1U<<1)
 #define NETSPLIT_BACKUP 8
 #define NETSPLIT_BACKUP_MASK (NETSPLIT_BACKUP - 1)
 #define NETSPLIT_HEADER_SIZE 18
 
+#if XASH_LOW_MEMORY == 2
+	#undef MULTIPLAYER_BACKUP
+	#undef SINGLEPLAYER_BACKUP
+	#undef NUM_PACKET_ENTITIES
+	#undef MAX_CUSTOM_BASELINES
+	#undef NET_MAX_FRAGMENT
+	#define MULTIPLAYER_BACKUP		4	// breaks protocol in legacy mode, new protocol status unknown
+	#define SINGLEPLAYER_BACKUP		4
+	#define NUM_PACKET_ENTITIES		32
+	#define MAX_CUSTOM_BASELINES		8
+	#define NET_MAX_FRAGMENT		32768
+#elif XASH_LOW_MEMORY == 1
+	#undef SINGLEPLAYER_BACKUP
+	#undef NUM_PACKET_ENTITIES
+	#undef MAX_CUSTOM_BASELINES
+	#undef NET_MAX_FRAGMENT
+	#define SINGLEPLAYER_BACKUP		4
+	#define NUM_PACKET_ENTITIES		64
+	#define MAX_CUSTOM_BASELINES		8
+	#define NET_MAX_FRAGMENT		32768
+#endif
+
 typedef struct netsplit_chain_packet_s
 {
 	// bool vector
-	unsigned int recieved_v[8];
+	uint32_t recieved_v[8];
 	// serial number
-	unsigned int id;
+	uint32_t id;
 	byte data[NET_MAX_PAYLOAD];
 	byte received;
 	byte count;
@@ -103,10 +124,10 @@ typedef struct netsplit_chain_packet_s
 // raw packet format
 typedef struct netsplit_packet_s
 {
-	unsigned int signature; // 0xFFFFFFFE
-	unsigned int length;
-	unsigned int part;
-	unsigned int id;
+	uint32_t signature; // 0xFFFFFFFE
+	uint32_t length;
+	uint32_t part;
+	uint32_t id;
 	// max 256 parts
 	byte count;
 	byte index;
@@ -117,8 +138,8 @@ typedef struct netsplit_packet_s
 typedef struct netsplit_s
 {
 	netsplit_chain_packet_t packets[NETSPLIT_BACKUP];
-	integer64 total_received;
-	integer64 total_received_uncompressed;
+	uint64_t total_received;
+	uint64_t total_received_uncompressed;
 } netsplit_t;
 
 // packet splitting

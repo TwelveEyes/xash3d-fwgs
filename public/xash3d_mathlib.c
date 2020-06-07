@@ -1,5 +1,5 @@
 /*
-mathlib.c - internal mathlib
+xash3d_mathlib.c - internal mathlib
 Copyright (C) 2010 Uncle Mike
 
 This program is free software: you can redistribute it and/or modify
@@ -16,11 +16,8 @@ GNU General Public License for more details.
 #include "xash3d_types.h"
 #include "const.h"
 #include "com_model.h"
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "eiface.h"
-#ifdef HAVE_TGMATH_H
-#include <tgmath.h>
-#endif
 
 #define NUM_HULL_ROUNDS	ARRAYSIZE( hull_table )
 #define HULL_PRECISION	4
@@ -327,8 +324,8 @@ void SinCos( float radians, float *sine, float *cosine )
 		fstp dword ptr [eax]
 	}
 #else
-	*sine = sinf(radians);
-	*cosine = cosf(radians);
+	*sine = sin(radians);
+	*cosine = cos(radians);
 #endif
 }
 
@@ -390,7 +387,7 @@ AngleVectors
 
 =================
 */
-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up )
+void GAME_EXPORT AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up )
 {
 	float	sr, sp, sy, cr, cp, cy;
 
@@ -426,7 +423,7 @@ VectorAngles
 
 =================
 */
-void VectorAngles( const float *forward, float *angles )
+void GAME_EXPORT VectorAngles( const float *forward, float *angles )
 {
 	float	tmp, yaw, pitch;
 
@@ -874,3 +871,4 @@ int BoxOnPlaneSide( const vec3_t emins, const vec3_t emaxs, const mplane_t *p )
 
 	return sides;
 }
+

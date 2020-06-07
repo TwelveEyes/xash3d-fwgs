@@ -45,7 +45,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 #include <stdlib.h> // rand, adbs
 #include <stdarg.h> // va
 
-#ifndef _WIN32
+#if !XASH_WIN32
 #include <stddef.h> // size_t
 #else
 #include <sys/types.h> // off_t
@@ -60,7 +60,7 @@ XASH SPECIFIC			- sort of hack that works only in Xash3D not in GoldSrc
 	#error "Please select timer backend"
 #endif
 
-#ifndef XASH_DEDICATED
+#if !XASH_DEDICATED
 	#if XASH_VIDEO == VIDEO_NULL
 		#error "Please select video backend"
 	#endif
@@ -119,7 +119,8 @@ typedef enum
 #include "con_nprint.h"
 #include "crclib.h"
 
-#define XASH_VERSION	"0.99"		// engine current version
+#define XASH_VERSION        "0.20" // engine current version
+#define XASH_COMPAT_VERSION "0.99" // version we are based on
 
 // PERFORMANCE INFO
 #define MIN_FPS         20.0f		// host minimum fps value for maxfps.
@@ -137,9 +138,17 @@ typedef enum
 
 #define CIN_MAIN		0
 #define CIN_LOGO		1
-
+#if XASH_LOW_MEMORY == 0
 #define MAX_DECALS		512	// touching TE_DECAL messages, etc
 #define MAX_STATIC_ENTITIES	3096	// static entities that moved on the client when level is spawn
+
+#elif XASH_LOW_MEMORY == 2
+#define MAX_DECALS		256	// touching TE_DECAL messages, etc
+#define MAX_STATIC_ENTITIES	32	// static entities that moved on the client when level is spawn
+#elif XASH_LOW_MEMORY == 1
+#define MAX_DECALS		512	// touching TE_DECAL messages, etc
+#define MAX_STATIC_ENTITIES	128	// static entities that moved on the client when level is spawn
+#endif
 
 // filesystem flags
 #define FS_STATIC_PATH  ( 1U << 0 )  // FS_ClearSearchPath will be ignore this path
@@ -433,8 +442,8 @@ typedef struct host_parm_s
 	qboolean		movevars_changed;
 	qboolean		renderinfo_changed;
 
-	char		rootdir[256];	// member root directory
-	char		rodir[256];		// readonly root
+	char		rootdir[MAX_OSPATH];	// member root directory
+	char		rodir[MAX_OSPATH];		// readonly root
 	char		gamefolder[MAX_QPATH];	// it's a default gamefolder	
 	byte		*imagepool;	// imagelib mempool
 	byte		*soundpool;	// soundlib mempool
@@ -656,6 +665,7 @@ uint Sound_GetApproxWavePlayLen( const char *filepath );
 // build.c
 //
 int Q_buildnum( void );
+int Q_buildnum_compat( void );
 const char *Q_buildos( void );
 const char *Q_buildarch( void );
 const char *Q_buildcommit( void );
@@ -664,8 +674,11 @@ const char *Q_buildcommit( void );
 //
 // host.c
 //
+typedef void( *pfnChangeGame )( const char *progname );
+
 qboolean Host_IsQuakeCompatible( void );
 void EXPORT Host_Shutdown( void );
+int EXPORT Host_Main( int argc, char **argv, const char *progname, int bChangeGame, pfnChangeGame func );
 int Host_CompareFileTime( int ft1, int ft2 );
 void Host_NewInstance( const char *name, const char *finalmsg );
 void Host_EndGame( qboolean abort, const char *message, ... ) _format( 2 );
@@ -811,24 +824,6 @@ void HPAK_CheckIntegrity( const char *filename );
 void HPAK_CheckSize( const char *filename );
 void HPAK_FlushHostQueue( void );
 
-//
-// keys.c
-//
-int Key_IsDown( int keynum );
-const char *Key_IsBind( int keynum );
-void Key_Event( int key, int down );
-void Key_Init( void );
-void Key_WriteBindings( file_t *f );
-const char *Key_GetBinding( int keynum );
-void Key_SetBinding( int keynum, const char *binding );
-void Key_ClearStates( void );
-const char *Key_KeynumToString( int keynum );
-int Key_StringToKeynum( const char *str );
-int Key_GetKey( const char *binding );
-void Key_EnumCmds_f( void );
-void Key_SetKeyDest( int key_dest );
-void Key_EnableTextInput( qboolean enable, qboolean force );
-
 #include "avi/avi.h"
 
 //
@@ -842,7 +837,7 @@ void Key_EnableTextInput( qboolean enable, qboolean force );
 
 // shared calls
 struct physent_s;
-typedef struct sv_client_s sv_client_t;
+struct sv_client_s;
 typedef struct sizebuf_s sizebuf_t;
 qboolean CL_IsInGame( void );
 qboolean CL_IsInMenu( void );
@@ -871,7 +866,7 @@ void SV_CreateDecal( sizebuf_t *msg, const float *origin, int decalIndex, int en
 void Log_Printf( const char *fmt, ... ) _format( 1 );
 void SV_BroadcastCommand( const char *fmt, ... ) _format( 1 );
 qboolean SV_RestoreCustomDecal( struct decallist_s *entry, edict_t *pEdict, qboolean adjacent );
-void SV_BroadcastPrintf( sv_client_t *ignore, char *fmt, ... ) _format( 2 );
+void SV_BroadcastPrintf( struct sv_client_s *ignore, char *fmt, ... ) _format( 2 );
 int R_CreateDecalList( struct decallist_s *pList );
 void R_ClearAllDecals( void );
 void CL_ClearStaticEntities( void );
@@ -972,14 +967,6 @@ byte TextureToGamma( byte b );
 void ID_Init( void );
 const char *ID_GetMD5( void );
 void GAME_EXPORT ID_SetCustomClientID( const char *id );
-
-//
-// sequence.c
-//
-typedef struct sequenceEntry_ sequenceEntry_s;
-typedef struct sentenceEntry_ sentenceEntry_s;
-sequenceEntry_s *Sequence_Get( const char *fileName, const char *entryName );
-sentenceEntry_s *Sequence_PickSentence( const char *groupName, int pickMethod, int *picked );
 
 //
 // masterlist.c

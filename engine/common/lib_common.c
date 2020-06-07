@@ -39,8 +39,8 @@ void COM_PushLibraryError( const char *error )
 void *COM_FunctionFromName_SR( void *hInstance, const char *pName )
 {
 #ifdef XASH_ALLOW_SAVERESTORE_OFFSETS
-	if( !Q_memcmp( pName, "ofs:",4 ) )
-		return svgame.dllFuncs.pfnGameInit + Q_atoi(pName + 4);
+	if( !memcmp( pName, "ofs:",4 ) )
+		return (byte*)svgame.dllFuncs.pfnGameInit + Q_atoi(pName + 4);
 #endif
 	return COM_FunctionFromName( hInstance, pName );
 }
@@ -48,7 +48,7 @@ void *COM_FunctionFromName_SR( void *hInstance, const char *pName )
 const char *COM_OffsetNameForFunction( void *function )
 {
 	static string sname;
-	Q_snprintf( sname, MAX_STRING, "ofs:%d", (size_t)((byte*)function - (byte*)svgame.dllFuncs.pfnGameInit) );
+	Q_snprintf( sname, MAX_STRING, "ofs:%lu", (size_t)((byte*)function - (byte*)svgame.dllFuncs.pfnGameInit) );
 	Con_Reportf( "COM_OffsetNameForFunction %s\n", sname );
 	return sname;
 }
@@ -116,7 +116,7 @@ static void COM_GenerateServerLibraryPath( char *out, size_t size )
 
 #else
 	string dllpath;
-	char *ext;
+	const char *ext;
 
 #if XASH_WIN32
 	Q_strncpy( dllpath, GI->game_dll, sizeof( dllpath ) );

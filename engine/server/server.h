@@ -16,7 +16,7 @@ GNU General Public License for more details.
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "mathlib.h"
+#include "xash3d_mathlib.h"
 #include "edict.h"
 #include "eiface.h"
 #include "physint.h"	// physics interface
@@ -32,7 +32,11 @@ GNU General Public License for more details.
 //=============================================================================
 
 #define SV_UPDATE_MASK	(SV_UPDATE_BACKUP - 1)
+#if XASH_LOW_MEMORY == 2
+#define SV_UPDATE_BACKUP SINGLEPLAYER_BACKUP
+#else
 extern int SV_UPDATE_BACKUP;
+#endif
 
 // hostflags
 #define SVF_SKIPLOCALHOST	BIT( 0 )

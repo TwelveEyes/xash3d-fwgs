@@ -7,6 +7,7 @@
 #endif // _WIN32
 
 #include <sys/types.h> // off_t
+#include STDINT_H
 
 typedef unsigned char byte;
 typedef int		sound_t;
@@ -29,14 +30,7 @@ typedef enum { false, true }	qboolean;
 typedef int qboolean;
 #endif
 
-#if _MSC_VER == 1200
-typedef __int64 integer64; //msvc6
-#elif defined (XASH_SDL) && !defined(REF_DLL)
-typedef Uint64 integer64;
-#else
-typedef unsigned long long integer64;
-#endif
-typedef integer64 longtime_t;
+typedef uint64_t longtime_t;
 
 #define MAX_STRING		256	// generic string
 #define MAX_INFO_STRING	256	// infostrings are transmitted across network
@@ -142,7 +136,13 @@ typedef void (*setpair_t)( const char *key, const void *value, void *buffer, voi
 // config strings are a general means of communication from
 // the server to all connected clients.
 // each config string can be at most CS_SIZE characters.
+#if XASH_LOW_MEMORY == 0
 #define MAX_QPATH		64	// max length of a game pathname
+#elif XASH_LOW_MEMORY == 2
+#define MAX_QPATH		32 // should be enough for singleplayer
+#elif XASH_LOW_MEMORY == 1
+#define MAX_QPATH 48
+#endif
 #define MAX_OSPATH		260	// max length of a filesystem pathname
 #define CS_SIZE		64	// size of one config string
 #define CS_TIME		16	// size of time string

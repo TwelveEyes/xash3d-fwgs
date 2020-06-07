@@ -28,6 +28,9 @@ GNU General Public License for more details.
 
 ==============================================================================
 */
+
+void Platform_Init( void );
+void Platform_Shutdown( void );
 double Platform_DoubleTime( void );
 void Platform_Sleep( int msec );
 void Platform_ShellExecute( const char *path, const char *parms );
@@ -36,7 +39,7 @@ void Platform_MessageBox( const char *title, const char *message, qboolean paren
 // see system.c
 // qboolean Sys_DebuggerPresent( void );
 
-#ifdef __ANDROID__
+#if XASH_ANDROID
 const char *Android_GetAndroidID( void );
 const char *Android_LoadID( void );
 void Android_SaveID( const char *id );
@@ -69,11 +72,22 @@ void Platform_RunEvents( void );
 void Platform_GetMousePos( int *x, int *y );
 void Platform_SetMousePos( int x, int y );
 void Platform_PreCreateMove( void );
+void Platform_MouseMove( float *x, float *y );
 // Clipboard
 void Platform_GetClipboardText( char *buffer, size_t size );
 void Platform_SetClipboardText( const char *buffer, size_t size );
 
-#ifdef __ANDROID__
+#if XASH_SDL == 12
+#define SDL_SetWindowGrab( wnd, state ) SDL_WM_GrabInput( (state) )
+#define SDL_MinimizeWindow( wnd ) SDL_WM_IconifyWindow()
+#define SDL_IsTextInputActive() host.textmode
+#endif
+
+#if !XASH_SDL
+#define SDL_VERSION_ATLEAST( x, y, z ) 0
+#endif
+
+#if XASH_ANDROID
 void Android_ShowMouse( qboolean show );
 void Android_MouseMove( float *x, float *y );
 #endif
@@ -93,15 +107,14 @@ typedef enum
 	rserr_unknown
 } rserr_t;
 
-typedef struct vidmode_s vidmode_t;
-
+struct vidmode_s;
 // Window
 qboolean  R_Init_Video( const int type );
 void      R_Free_Video( void );
 qboolean  VID_SetMode( void );
 rserr_t   R_ChangeDisplaySettings( int width, int height, qboolean fullscreen );
 int       R_MaxVideoModes( void );
-vidmode_t*R_GetVideoMode( int num );
+struct vidmode_s *R_GetVideoMode( int num );
 void*     GL_GetProcAddress( const char *name ); // RenderAPI requirement
 void      GL_UpdateSwapInterval( void );
 int GL_SetAttribute( int attr, int val );
@@ -111,6 +124,17 @@ void *SW_LockBuffer( void );
 void SW_UnlockBuffer( void );
 qboolean SW_CreateBuffer( int width, int height, uint *stride, uint *bpp, uint *r, uint *g, uint *b );
 
+
+//
+// in_evdev.c
+//
+#ifdef XASH_USE_EVDEV
+void Evdev_SetGrab( qboolean grab );
+void Evdev_Shutdown( void );
+void Evdev_Init( void );
+void IN_EvdevMove( float *yaw, float *pitch );
+void IN_EvdevFrame ( void );
+#endif // XASH_USE_EVDEV
 /*
 ==============================================================================
 
